@@ -1,0 +1,1906 @@
+{
+  "name": "Lead Guardian e enriquecimento — RD Station → Pipedrive — entrada — template público",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Lead Guardian e enriquecimento — RD Station → Pipedrive\nTemplate público inativo. Bloco 1. Consulte docs/arquitetura.md.",
+        "height": 796,
+        "width": 492,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1152,
+        -880
+      ],
+      "id": "be471934-a1d1-4f47-b52c-3144eba6df49",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Lead Guardian e enriquecimento — RD Station → Pipedrive\nTemplate público inativo. Bloco 2. Consulte docs/arquitetura.md.",
+        "height": 788,
+        "width": 220,
+        "color": 7
+      },
+      "id": "b6261fc0-9ea0-4dc7-9de8-3b1cf804003e",
+      "name": "Sticky Note6",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1392,
+        -880
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "demo-entrada-2",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1328,
+        -416
+      ],
+      "id": "161f923b-18b6-4b55-a1e7-23481cdc977d",
+      "name": "RD Station",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "demo-entrada-3",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1328,
+        -592
+      ],
+      "id": "701654ab-77e4-4190-852a-96593d64e5a3",
+      "name": "MANYCHAT",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ \n  [\n    \"RDStation_totem_empresa_demo_lp_lovable\",\n    \"totem\",\n    \"totem_empresa_demo\"\n  ].some(valor =>\n    $('Consolidado').first().json.body[\"user-agent\"]?.toLowerCase().includes(valor.toLowerCase())\n  )\n}}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "CONFIGURE_ID_9"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "RD_TOTEM"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "CONFIGURE_ID_10",
+                    "leftValue": "={{ \n$('Consolidado').first().json.body[\"user-agent\"] !== \"RDStation_totem_empresa_demo_lp_lovable\" \n&& $('Consolidado').first().json.body[\"user-agent\"] !== \"ManyChat\"\n}}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "RD_SITE/WHATS"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "CONFIGURE_ID_11",
+                    "leftValue": "={{ $('Consolidado').first().json.body[\"user-agent\"] }}",
+                    "rightValue": "=ManyChat",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "MANYCHAT_SITE/WHATS"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -48,
+        -256
+      ],
+      "id": "a050b058-808f-48ae-a95c-52642b53a9ea",
+      "name": "Validar evento",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "https://demo.pipedrive.com/v1/users",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "x-api-token",
+              "value": "CONFIGURE_SECRET_PRIVATELY"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        576,
+        -272
+      ],
+      "id": "2537d8c7-c8a8-46ae-a729-9326a845ff2f",
+      "name": "Obter usuários",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const leads = $('Lista todos os leads').item.json.data;\nconst usuarios = $('Obter usuários').item.json.data;\n\n// cria mapa de usuários\nconst userMap = {};\nusuarios.forEach(user => {\n  userMap[user.id] = {\n    owner_name: user.name,\n    owner_email: user.email\n  };\n});\n\n// aplica filtro\nconst filtrados = leads.filter(lead =>\n  (lead.source_name || '') !== 'Manually created' &&\n  (lead.origin || '') !== 'ManuallyCreated'\n);\n\n// limpa e cruza os dados\nconst resultado = filtrados.map(lead => ({\n  add_time: lead.add_time,\n  owner_name: userMap[lead.owner_id]?.owner_name || null,\n  owner_email: userMap[lead.owner_id]?.owner_email || null,\n  id: lead.id,\n  title: lead.title,\n  owner_id: lead.owner_id,\n  source_name: lead.source_name\n}));\n\nreturn [\n  {\n    json: {\n      body: resultado\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        -272
+      ],
+      "id": "3f9b2cfe-3ea3-4a13-aca6-ee5c92bb4daa",
+      "name": "Listar Leads API e Cruzar Usuários",
+      "executeOnce": false,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "https://demo.pipedrive.com/v1/leads?limit=60&sort=add_time%20desc",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "x-api-token",
+              "value": "CONFIGURE_SECRET_PRIVATELY"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        240,
+        -272
+      ],
+      "id": "a270fcca-8592-4300-9be7-b2e0e20851a0",
+      "name": "Lista todos os leads",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analise apenas os dados demonstrativos fornecidos: {{ JSON.stringify($json) }}",
+        "options": {
+          "systemMessage": "Sugira um responsável demonstrativo. Este agente representa uma etapa histórica desativada."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        1216,
+        -272
+      ],
+      "id": "a66904bd-37b9-4daf-8d3a-8a78f0735a79",
+      "name": "Definir Owner",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1584,
+        -256
+      ],
+      "id": "6e026670-84cf-43a5-811f-b274b434d911",
+      "name": "Google Gemini Chat Model",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $('TIPO DE E-MAIL').first().json.classificacao }}",
+              "operation": "notEndsWith",
+              "value2": "Domínio Pessoal"
+            }
+          ]
+        },
+        "combineOperation": "any"
+      },
+      "id": "aab2a8f6-338a-4f0c-8b84-981907c3930e",
+      "name": "VALIDAR TIPO DE E-MAIL2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        -672
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pegamos o e-mail da entrada\nconst email = ($json.body?.email || \"\").trim().toLowerCase();\n\n// Domínios pessoais\nconst personalDomains = new Set([\n  // Google\n  \"gmail.com\",\n  \"googlemail.com\",\n\n  // Microsoft\n  \"hotmail.com\",\n  \"hotmail.com.br\",\n  \"hotmail.co.uk\",\n  \"hotmail.fr\",\n  \"outlook.com\",\n  \"outlook.com.br\",\n  \"live.com\",\n  \"live.com.br\",\n  \"msn.com\",\n\n  // Yahoo\n  \"yahoo.com\",\n  \"yahoo.com.br\",\n  \"ymail.com\",\n  \"rocketmail.com\",\n\n  // Apple\n  \"icloud.com\",\n  \"me.com\",\n  \"mac.com\",\n\n  // AOL\n  \"aol.com\",\n\n  // Proton\n  \"protonmail.com\",\n  \"proton.me\",\n\n  // Zoho\n  \"zoho.com\",\n  \"zohomail.com\",\n\n  // GMX\n  \"gmx.com\",\n  \"gmx.net\",\n\n  // Mail.com\n  \"mail.com\",\n\n  // Fastmail\n  \"fastmail.com\",\n  \"fastmail.fm\",\n\n  // Tuta\n  \"tuta.com\",\n  \"tutanota.com\",\n  \"tutanota.de\",\n\n  // Mailfence\n  \"mailfence.com\",\n\n  // Yandex\n  \"yandex.com\",\n  \"yandex.ru\",\n\n  // Mail.ru\n  \"mail.ru\",\n  \"bk.ru\",\n  \"inbox.ru\",\n  \"list.ru\",\n\n  // Naver\n  \"naver.com\",\n\n  // QQ\n  \"qq.com\",\n\n  // NetEase\n  \"163.com\",\n  \"126.com\",\n\n  // Brasil\n  \"uol.com.br\",\n  \"bol.com.br\",\n  \"terra.com.br\",\n  \"ig.com.br\",\n  \"globo.com\",\n  \"oi.com.br\",\n\n  // Outros\n  \"rediffmail.com\",\n  \"web.de\",\n  \"email.com\",\n  \"posteo.de\",\n  \"hey.com\"\n]);\n\n// Domínios temporários\nconst disposableDomains = new Set([\n  \"mailinator.com\",\n  \"tempmail.com\",\n  \"10minutemail.com\",\n  \"guerrillamail.com\",\n  \"sharklasers.com\",\n  \"yopmail.com\",\n  \"temp-mail.org\",\n  \"dispostable.com\",\n  \"getnada.com\",\n  \"maildrop.cc\"\n]);\n\nfunction getDomain(email) {\n  const index = email.lastIndexOf(\"@\");\n  return index > -1 ? email.substring(index + 1) : \"\";\n}\n\nconst domain = getDomain(email);\n\nlet classificacao = \"Domínio Corporativo\";\n\nif (!domain) {\n  classificacao = \"E-mail inválido\";\n} else if (disposableDomains.has(domain)) {\n  classificacao = \"Domínio Temporário\";\n} else if (personalDomains.has(domain)) {\n  classificacao = \"Domínio Pessoal\";\n}\n\nreturn {\n  email,\n  dominio: domain,\n  classificacao\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -864,
+        -592
+      ],
+      "id": "f72796af-9abe-4bc3-ac5d-0b1eced486a3",
+      "name": "TIPO DE E-MAIL"
+    },
+    {
+      "parameters": {
+        "resource": "organization",
+        "name": "={{ $('Consolidado').first().json.body.nome_empresa }}",
+        "additionalFields": {
+          "customProperties": {
+            "property": [
+              {
+                "name": "=owner_id",
+                "value": "=CONFIGURE_ID_22"
+              },
+              {
+                "name": "CONFIGURE_ID_23",
+                "value": "Inbound"
+              },
+              {
+                "name": "=CONFIGURE_ID_24",
+                "value": "={{ $('Consolidado').first().json.body.Canal }}"
+              },
+              {
+                "name": "=CONFIGURE_ID_25",
+                "value": "={{ $('Consolidado').first().json.body.email.split('@')[1] }}"
+              },
+              {
+                "name": "website",
+                "value": "={{ $('Consolidado').first().json.body.email.split('@')[1] }}"
+              },
+              {
+                "name": "CONFIGURE_ID_24",
+                "value": "={{ $('Consolidado').item.json.body.Canal }}"
+              }
+            ]
+          },
+          "label": 151,
+          "visible_to": "3"
+        }
+      },
+      "type": "n8n-nodes-base.pipedrive",
+      "typeVersion": 1,
+      "position": [
+        176,
+        -784
+      ],
+      "id": "e62c9247-8507-4e91-a6b9-0335a86fc59b",
+      "name": "Criar organização",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "person",
+        "name": "={{ $('Consolidado').first().json.body.nome }}",
+        "additionalFields": {
+          "customProperties": {
+            "property": [
+              {
+                "name": "CONFIGURE_ID_27",
+                "value": "={{ $('Consolidado').first().json.body.Cargo ?? \"Outros\"}}"
+              },
+              {
+                "name": "CONFIGURE_ID_28",
+                "value": "={{ $('Consolidado').first().json.body.id_rd }}"
+              },
+              {
+                "name": "CONFIGURE_ID_29",
+                "value": "={{ $('Consolidado').first().json.body.Cargo ?? \"Outros\"}}"
+              },
+              {
+                "name": "CONFIGURE_ID_29",
+                "value": "={{ $('Consolidado').first().json.body.Cargo ?? \"Outros\"}}"
+              }
+            ]
+          },
+          "email": [
+            "={{ $('Consolidado').first().json.body.email }}"
+          ],
+          "label": 7,
+          "marketing_status": "subscribed",
+          "org_id": "={{ $json.id }}",
+          "phone": [
+            "={{\n[\n  $('Consolidado').first().json.body.celular,\n  $('Consolidado').first().json.body.telefone\n]\n.find(v => v && String(v).replace(/\\D/g,'').trim() !== '')\n}}"
+          ],
+          "visible_to": "3",
+          "owner_id": "={{ CONFIGURE_ID_22 }}"
+        }
+      },
+      "type": "n8n-nodes-base.pipedrive",
+      "typeVersion": 1,
+      "position": [
+        400,
+        -784
+      ],
+      "id": "008e18f3-50a1-4ebc-bd4c-fff65cf4e149",
+      "name": "Criar pessoa",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://demo.pipedrive.com/v1/leads",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "x-api-token",
+              "value": "CONFIGURE_SECRET_PRIVATELY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"title\": \"{{ $('Criar organização').first().json.name }}\",\n  \"owner_id\": {{ CONFIGURE_ID_22 }},\n  \n\"label_ids\": \n  [ \n    {{ $('Consolidado').item.json.body.label }}  \n  ],\n  \"person_id\": {{ $json.id ?? null}},\n  \"organization_id\": {{ $('Criar organização').first().json.id }},\n  \"channel\": {{ $('Consolidado').first().json.body.canal_id_lead }},\n  \"channel_id\": \"{{ $('Consolidado').first().json.body.canal_id_lead }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        624,
+        -784
+      ],
+      "id": "2a0f71b4-c767-4884-adc4-f7a251f96a8a",
+      "name": "Criar Lead2",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://demo.pipedrive.com/v1/leads/{{ $json.data.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "x-api-token",
+              "value": "CONFIGURE_SECRET_PRIVATELY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"CONFIGURE_ID_32\": [261],\n  \"CONFIGURE_ID_33\":{{ $('Consolidado').first().json.body.canal_id_lead_canal_n_usar }}, \n  \"CONFIGURE_ID_34\": 137,\n  \"CONFIGURE_ID_35\": 135,\n  \"CONFIGURE_ID_36\":{{ $('Consolidado').first().json.body.Origem_Lead_id }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        864,
+        -784
+      ],
+      "id": "6e69817b-8174-4236-bc78-b1b6769b6ee4",
+      "name": "Update Lead2",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://demo.pipedrive.com/v1/leads/{{ $json.data.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "x-api-token",
+              "value": "CONFIGURE_SECRET_PRIVATELY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"CONFIGURE_ID_32\": [261],\n  \"CONFIGURE_ID_33\":{{ $('Consolidado').first().json.body.canal_id_lead_canal_n_usar }}, \n  \"CONFIGURE_ID_34\": 137,\n  \"CONFIGURE_ID_35\": 135,\n  \"CONFIGURE_ID_36\":{{ $('Consolidado').first().json.body.Origem_Lead_id }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        624,
+        -560
+      ],
+      "id": "6bb767b5-d7da-4ed5-8903-be5809ac7806",
+      "name": "Update Lead3",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://demo.pipedrive.com/v1/leads",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "x-api-token",
+              "value": "CONFIGURE_SECRET_PRIVATELY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"title\": \"{{$('Consolidado').first().json.body.nome_empresa ||$('Consolidado').item.json.body[\"nome e sobrenome\"] }}\",\n  \"owner_id\": {{ CONFIGURE_ID_22 }},\n  \"label_ids\": \n  [ \n    {{ $('Consolidado').item.json.body.label }}  \n  ],\n  \"person_id\": {{ $json.id }},\n  \"channel\": {{ $('Consolidado').first().json.body.canal_id_lead }},\n  \"channel_id\": \"{{ $('Consolidado').first().json.body.canal_id_lead }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        400,
+        -560
+      ],
+      "id": "476c0fd1-fefb-4a9b-bb08-746af75aecec",
+      "name": "Criar Lead4",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "CONFIGURE_ID_40",
+              "name": "body.nome",
+              "value": "={{\n  $('RD Station').item.json.body.leads[0].last_conversion.content.Nome ??\n  $('RD Station').item.json.body.leads[0].first_conversion.content.Nome ??\n  $('RD Station').item.json.body.leads[0].name?.split(' ')[0] ??\n  $('RD Station').item.json.body.leads[0].name ??\n  \"Não informado\"\n}}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_41",
+              "name": "body[\"nome e sobrenome\"]",
+              "value": "={{ \n$('RD Station').item.json.body.leads[0].name ?? \n$('RD Station').item.json.body.leads[0].first_conversion.content.__cdp__original_event.payload.name ?? \n$('RD Station').item.json.body.leads[0].first_conversion.content.Nome\n}}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_42",
+              "name": "body.sobrenome",
+              "value": "={{\n(\n  ($('RD Station').item.json.body.leads[0].name ?? $('RD Station').item.json.body.leads[0].first_conversion.content.__cdp__original_event.payload.name ?? '')\n  .split(' ')[1]\n) || ''\n}}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_43",
+              "name": "body.email",
+              "value": "={{ \n$('RD Station').item.json.body.leads[0].email \n??  \n$('RD Station').item.json.body.leads[0].first_conversion.content.email_lead \n??\n$('RD Station').item.json.body.leads[0].last_conversion.content.email_lead \n}}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_44",
+              "name": "body.telefone",
+              "value": "={{\nString(\n$('RD Station').item.json.body.leads[0].first_conversion?.content?.Telefone ??\n$('RD Station').item.json.body.leads[0].first_conversion?.content?.telefone ??\n$('RD Station').item.json.body.leads[0].first_conversion?.content?.__cdp__original_event?.payload?.personal_phone ??\n$('RD Station').item.json.body.leads[0].last_conversion?.content?.Telefone ??\n$('RD Station').item.json.body.leads[0].last_conversion?.content?.telefone ??\n$('RD Station').item.json.body.leads[0].last_conversion?.content?.__cdp__original_event?.payload?.personal_phone ??\n$('RD Station').item.json.body.leads[0].personal_phone ??\n$json.body?.leads?.[0]?.personal_phone ??\n''\n).replace(/\\D/g,'')\n}}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_45",
+              "name": "body.celular",
+              "value": "={{\nString(\n$('RD Station').item.json.body.leads[0].first_conversion?.content?.Celular ??\n$('RD Station').item.json.body.leads[0].first_conversion?.content?.celular ??\n$('RD Station').item.json.body.leads[0].first_conversion?.content?.__cdp__original_event?.payload?.mobile_phone ??\n$('RD Station').item.json.body.leads[0].last_conversion?.content?.Celular ??\n$('RD Station').item.json.body.leads[0].last_conversion?.content?.celular ??\n$('RD Station').item.json.body.leads[0].last_conversion?.content?.__cdp__original_event?.payload?.mobile_phone ??\n$('RD Station').item.json.body.leads[0].mobile_phone ??\n$json.body?.leads?.[0]?.mobile_phone ??\n''\n).replace(/\\D/g,'')\n}}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_46",
+              "name": "body.Cargo",
+              "value": "={{ $json.body.leads[0].first_conversion.content[\"Cargo:*\"] ??\"Outros\"}}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_47",
+              "name": "body.nome_empresa",
+              "value": "={{\n  $('RD Station').item.json.body.leads[0].last_conversion?.content?.Empresa ??\n  $json.body.leads[0]?.last_conversion?.content?.__cdp__original_event?.payload?.company_name ??\n  $('RD Station').item.json.body.leads[0].first_conversion?.content?.Empresa ??\n  $json.body.leads[0]?.first_conversion?.content?.__cdp__original_event?.payload?.company_name ??\n  $('RD Station').item.json.body.leads[0].company ??\n  null\n}}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_48",
+              "name": "body.identificacao_evento",
+              "value": "={{ $('RD Station').item.json.body.leads[0].first_conversion.content.event_identifier ?? $json.body.leads[0].last_conversion.content.identificador }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_49",
+              "name": "body.interesse",
+              "value": "=Geral",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_50",
+              "name": "body.id_rd",
+              "value": "={{ $('RD Station').item.json.body.leads[0].id }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_51",
+              "name": "body.event_type",
+              "value": "={{ \n $('RD Station').item.json.body.leads[0]?.last_conversion?.content?.event_type??\n$('RD Station').item.json.body.leads[0]?.first_conversion?.content?.__cdp__original_event?.event_type ??\n $('RD Station').item.json.body.leads[0]?.first_conversion?.content?.event_type ??\n''\n}}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_52",
+              "name": "body.event_identifier",
+              "value": "={{ $json.body.leads[0].last_conversion.content.event_identifier ??$json.body.leads[0].first_conversion.content.event_identifier }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_53",
+              "name": "body.identificador",
+              "value": "={{ $json.body.leads[0].last_conversion.content.identificador ?? $json.body.leads[0].first_conversion.content.identificador }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_54",
+              "name": "body.device",
+              "value": "={{ $json.body.leads[0].first_conversion.content.__cdp__original_event.payload.device ??\"Desktop\"}}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_55",
+              "name": "body.Canal",
+              "value": "={{\n(() => {\n  const last = $json.body.leads[0]?.last_conversion?.content || {};\n  const first = $json.body.leads[0]?.first_conversion?.content || {};\n\n  const isempresa_demoHub =\n    (last.conversion_identifier || '').toLowerCase().includes('empresa_demohub') ||\n    (last.event_identifier || '').toLowerCase().includes('empresa_demohub') ||\n    (last.identificador || '').toLowerCase().includes('empresa_demohub') ||\n    (last.conversion_url || '').toLowerCase().includes('empresa_demohub') ||\n    (first.event_identifier || '').toLowerCase().includes('empresa_demohub') ||\n    (first.identificador || '').toLowerCase().includes('empresa_demohub');\n\n  if (isempresa_demoHub) {\n    return \"empresa_demo Hub\";\n  }\n\n  const valor =\n    (last.conversion_url || '').includes(\"/contato/\")\n      ? \"Site\"\n    : last.conversion_url === \"https://crm.example.com/CONFIGURE_ENDPOINT\"\n      ? \"LP - XM\"\n    : last.conversion_url === \"https://crm.example.com/CONFIGURE_ENDPOINT\"\n      ? \"Site\"\n    : last.conversion_identifier === \"totem_empresa_demo_lp_lovable\"\n      ? \"LP - Totem\"\n    : first.event_identifier || \"Site\";\n\n  const permitidos = [\n    \"LP - XM\",\n    \"Site\",\n    \"WhatsApp\",\n    \"E-mail\",\n    \"Telefone\",\n    \"LP - Totem\",\n    \"empresa_demo Hub\"\n  ];\n\n  return permitidos.includes(valor)\n    ? valor\n    : \"Site\";\n})()\n}}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_56",
+              "name": "body.canal_id_lead",
+              "value": "={{\n(() => {\n  const last = $json.body.leads[0]?.last_conversion?.content || {};\n  const first = $json.body.leads[0]?.first_conversion?.content || {};\n\n  const isempresa_demoHub =\n    (last.conversion_identifier || '').toLowerCase().includes('empresa_demohub') ||\n    (last.event_identifier || '').toLowerCase().includes('empresa_demohub') ||\n    (last.identificador || '').toLowerCase().includes('empresa_demohub') ||\n    (last.conversion_url || '').toLowerCase().includes('empresa_demohub') ||\n    (first.event_identifier || '').toLowerCase().includes('empresa_demohub') ||\n    (first.identificador || '').toLowerCase().includes('empresa_demohub');\n\n  if (isempresa_demoHub) {\n    return 457;\n  }\n\n  const canal =\n    (last.conversion_url || '').includes('/contato/')\n      ? 'Site'\n    : last.conversion_url === 'https://crm.example.com/CONFIGURE_ENDPOINT'\n      ? 'LP - XM'\n    : last.conversion_url === 'https://crm.example.com/CONFIGURE_ENDPOINT'\n      ? 'Site'\n    : last.conversion_identifier === 'totem_empresa_demo_lp_lovable'\n      ? 'LP - Totem'\n    : 'Site';\n\n  const options = [\n    { label: \"Apollo\", id: 395 },\n    { label: \"Busca Direta\", id: 396 },\n    { label: \"Campaigns\", id: 298 },\n    { label: \"Chatbot\", id: 295 },\n    { label: \"Cliente Base empresa_demo\", id: 397 },\n    { label: \"Cliente Base Track\", id: 398 },\n    { label: \"CONAREC 2024\", id: 399 },\n    { label: \"CX Leadership Summit (CXL) - Out/2024\", id: 400 },\n    { label: \"Effecti - Licitações\", id: 419 },\n    { label: \"E-mail\", id: 418 },\n    { label: \"Facebook Ads\", id: 404 },\n    { label: \"Facebook Orgânico\", id: 403 },\n    { label: \"Feira/Evento\", id: 402 },\n    { label: \"Fusão empresa_demo x Track\", id: 405 },\n    { label: \"Google Ads\", id: 406 },\n    { label: \"Google Orgânico\", id: 407 },\n    { label: \"Indicação\", id: 408 },\n    { label: \"Instagram Ads\", id: 410 },\n    { label: \"Instagram Orgânico\", id: 409 },\n    { label: \"Linkedin Ads\", id: 412 },\n    { label: \"Linkedin Orgânico\", id: 411 },\n    { label: \"Live Chat\", id: 296 },\n    { label: \"LP - Totem\", id: 420 },\n    { label: \"LP - XM\", id: 421 },\n    { label: \"empresa_demohub\", id: 457 },\n    { label: \"Marketplace\", id: 299 },\n    { label: \"Materiais\", id: 422 },\n    { label: \"Messaging Inbox\", id: 300 },\n    { label: \"Não identificado\", id: 428 },\n    { label: \"Parceria\", id: 413 },\n    { label: \"Prospector\", id: 292 },\n    { label: \"Reunião\", id: 423 },\n    { label: \"Site\", id: 417 },\n    { label: \"Teams\", id: 424 },\n    { label: \"Telefone\", id: 425 },\n    { label: \"Webinar\", id: 426 },\n    { label: \"WhatsApp\", id: 427 },\n    { label: \"Whatsapp Track\", id: 415 }\n  ];\n\n  return options.find(o => o.label === canal)?.id || 417;\n})()\n}}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_57",
+              "name": "body.Origem_lead",
+              "value": "={{\n(() => {\n\nconst lead = $('RD Station').item.json.body.leads?.[0];\n\nconst origemLead = lead?.custom_fields?.[\"Origem lead\"];\n\nif (origemLead && origemLead.trim() !== \"\") {\n  return origemLead;\n}\n\nconst source = lead?.first_conversion?.conversion_origin?.source?.toLowerCase();\nconst medium = lead?.first_conversion?.conversion_origin?.medium?.toLowerCase();\n\nif (source === \"google\" && medium === \"cpc\") {\n  return \"Google Ads\";\n}\n\nconst organicSources = [\n  \"direct\",\n  \"referral\",\n  \"empresa_demo.com.br\",\n  \"facebook\",\n  \"social\",\n  \"google\",\n  \"organic\",\n  \"unknown\",\n  \"none\"\n];\n\nif (organicSources.includes(source) || organicSources.includes(medium)) {\n  return \"Google Orgânico\";\n}\n\nreturn \"Google Orgânico\";\n\n})()\n}}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_58",
+              "name": "body.Origem_Lead_id",
+              "value": "={{\n(() => {\n\n  const lead = $('RD Station').item.json.body.leads?.[0];\n\n  let canal = lead?.custom_fields?.[\"Origem lead\"];\n\n  // Se não existir origem definida\n  if (!canal || canal.trim() === \"\") {\n\n    const source = (lead?.first_conversion?.conversion_origin?.source || '').toLowerCase();\n    const medium = (lead?.first_conversion?.conversion_origin?.medium || '').toLowerCase();\n\n    // Email\n    if (medium === \"email\" || source === \"email\") {\n      canal = \"email\";\n\n    // Google Ads\n    } else if (source === \"google\" && medium === \"cpc\") {\n      canal = \"Google Ads\";\n\n    } else {\n\n      const organicSources = [\n        \"direct\",\n        \"referral\",\n        \"empresa_demo.com.br\",\n        \"facebook\",\n        \"social\",\n        \"google\",\n        \"organic\",\n        \"unknown\",\n        \"none\"\n      ];\n\n      if (\n        organicSources.includes(source) ||\n        organicSources.includes(medium)\n      ) {\n        canal = \"Google Orgânico\";\n      }\n    }\n  }\n\n  const options = [\n    { label: \"Google Ads\", id: 280 },\n    { label: \"Instagram Ads\", id: 281 },\n    { label: \"Instagram\", id: 282 },\n    { label: \"Facebook Ads\", id: 283 },\n    { label: \"Facebook\", id: 284 },\n    { label: \"Linkedin\", id: 285 },\n    { label: \"Linkedin Ads\", id: 286 },\n    { label: \"Google Orgânico\", id: 287 },\n    { label: \"Busca Direta\", id: 288 },\n    { label: \"Email MKT\", id: 289 },\n    { label: \"email\", id: 289 },\n    { label: \"Eventos e Feiras\", id: 290 },\n    { label: \"Indicação\", id: 291 },\n    { label: \"Apollo\", id: 301 },\n    { label: \"CONAREC 2024\", id: 302 },\n    { label: \"CX Leadership Summit (CXL) - Out/2024\", id: 306 },\n    { label: \"Fusão empresa_demo x Track\", id: 325 },\n    { label: \"Parceria\", id: 374 },\n    { label: \"Cliente Base empresa_demo\", id: 379 },\n    { label: \"Cliente Base Track\", id: 380 },\n    { label: \"Não informado\", id: 429 }\n  ];\n\n  return options.find(o => o.label === canal)?.id ?? 429;\n\n})()\n}}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_59",
+              "name": "body.origin_channel",
+              "value": "={{ $json.body.leads[0].last_conversion.conversion_origin.channel }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_60",
+              "name": "body.origin_medium",
+              "value": "={{ $json.body.leads[0].first_conversion.conversion_origin.medium }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_61",
+              "name": "body.origin_source",
+              "value": "={{ $json.body.leads[0].first_conversion.conversion_origin.source }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_62",
+              "name": "body.leads_uuid",
+              "value": "={{ $json.body.leads[0].uuid }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_63",
+              "name": "body.canal_id_lead_canal_n_usar",
+              "value": "={{\n(() => {\n\n  const lead = $json.body.leads?.[0];\n\n  const canal =\n    lead?.last_conversion?.content?.conversion_url === \"https://crm.example.com/CONFIGURE_ENDPOINT\"\n      ? \"LP - XM\"\n      : lead?.last_conversion?.content?.conversion_url === \"https://crm.example.com/CONFIGURE_ENDPOINT\"\n      ? \"Site\"\n      : lead?.last_conversion?.content?.conversion_identifier === \"totem_empresa_demo_lp_lovable\"\n      ? \"LP - Totem\"\n      : lead?.first_conversion?.content?.event_identifier ?? \"Site\";\n\n  const options = [\n    { label: \"LP - XM\", id: 263 },\n    { label: \"Site\", id: 264 },\n    { label: \"WhatsApp\", id: 265 },\n    { label: \"whats-home\", id: 265 },\n    { label: \"E-mail\", id: 266 },\n    { label: \"Telefone\", id: 267 },\n    { label: \"Feira/Evento\", id: 303 },\n    { label: \"Whatsapp Track\", id: 364 },\n    { label: \"Materiais\", id: 365 },\n    { label: \"Webinar\", id: 366 },\n    { label: \"Reunião\", id: 377 },\n    { label: \"Teams\", id: 378 },\n    { label: \"LP - Totem\", id: 414 },\n    { label: \"Effecti - Licitações\", id: 416 },\n    { label: \"/contato/\", id: 264 }\n\n  ];\n\n  return options.find(o => o.label === canal)?.id ?? 264;\n\n})()\n}}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_64",
+              "name": "body.user-agent",
+              "value": "=RDStation_{{\n  $json.body?.leads?.[0]?.last_conversion?.content?.event_identifier ??\n  $json.body?.leads?.[0]?.first_conversion?.content?.event_identifier ??\n  \"desconhecido\"\n}}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_65",
+              "name": "body.Mensagem",
+              "value": "={{ $json.body.leads[0].custom_fields.Mensagem ??\"Sem observações\" }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_66",
+              "name": "body.uuid",
+              "value": "={{ $json.body.leads[0].uuid }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_67",
+              "name": "body.tags",
+              "value": "={{ $json.body.leads[0].tags?.length ? $json.body.leads[0].tags[0] : \"SEM TAG\" }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_68",
+              "name": "body.label",
+              "value": "={{\n(\n  [\n    $json.body.leads?.[0]?.last_conversion?.content?.identificador,\n    $json.body.leads?.[0]?.last_conversion?.content?.event_identifier,\n    $json.body.leads?.[0]?.first_conversion?.content?.identificador\n  ].some(valor =>\n    ['empresa_demohub', 'whats-hub'].some(termo =>\n      (valor || '').toLowerCase().includes(termo)\n    )\n  )\n)\n  ? `\"CONFIGURE_ID_69\", \"CONFIGURE_ID_70\"`\n  : `\"CONFIGURE_ID_70\"`\n}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1088,
+        -416
+      ],
+      "id": "875936c4-503d-4563-97a8-f8176da66845",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "CONFIGURE_ID_40",
+              "name": "body.nome",
+              "value": "={{ $json.body.nome }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_41",
+              "name": "body[\"nome e sobrenome\"]",
+              "value": "={{ $json.body[\"nome e sobrenome\"] ?? $json.body.nome }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_42",
+              "name": "body.sobrenome",
+              "value": "={{ $json.body.sobrenome }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_43",
+              "name": "body.email",
+              "value": "={{ $json.body.email }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_44",
+              "name": "body.telefone",
+              "value": "={{ $json.body.telefone }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_45",
+              "name": "body.celular",
+              "value": "={{ $json.body.celular }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_46",
+              "name": "body.Cargo",
+              "value": "={{ $json.body.Cargo }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_47",
+              "name": "body.nome_empresa",
+              "value": "={{ $json.body.nome_empresa }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_48",
+              "name": "body.identificacao_evento",
+              "value": "={{ $json.body.identificacao_evento }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_49",
+              "name": "body.interesse",
+              "value": "={{ $json.body.interesse }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_50",
+              "name": "body.id_rd",
+              "value": "={{ $json.body.id_rd }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_51",
+              "name": "body.event_type",
+              "value": "={{ $json.body.event_type }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_52",
+              "name": "body.event_identifier",
+              "value": "={{ $json.body.event_identifier }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_53",
+              "name": "body.identificador",
+              "value": "={{ $json.body.identificador }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_54",
+              "name": "body.device",
+              "value": "={{ $json.body.device }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_55",
+              "name": "body.Canal",
+              "value": "={{ $json.body.Canal }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_56",
+              "name": "body.canal_id_lead",
+              "value": "={{ $json.body.canal_id_lead }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_57",
+              "name": "body.Origem_lead",
+              "value": "={{ $json.body.Origem_lead }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_58",
+              "name": "body.Origem_Lead_id",
+              "value": "={{ $json.body.Origem_Lead_id }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_59",
+              "name": "body.origin_channel",
+              "value": "={{ $json.body.origin_channel }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_60",
+              "name": "body.origin_medium",
+              "value": "={{ $json.body.origin_medium }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_61",
+              "name": "body.origin_source",
+              "value": "={{ $json.body.origin_source }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_62",
+              "name": "body.leads_uuid",
+              "value": "={{ $json.body.leads_uuid }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_63",
+              "name": "body.canal_id_lead_canal_n_usar",
+              "value": "={{ $json.body.canal_id_lead_canal_n_usar }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_72",
+              "name": "body[\"user-agent\"]",
+              "value": "={{ $json.body[\"user-agent\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_73",
+              "name": "body.Mensagem",
+              "value": "={{ $json.body?.Mensagem?.trim() || \"Sem mensagem enviada\" }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_74",
+              "name": "body.uuid",
+              "value": "={{ $json.body.uuid ??null}}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_75",
+              "name": "body.tags",
+              "value": "={{ $json.body.tags }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_76",
+              "name": "body.label",
+              "value": "={{ $json.body.label }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -864,
+        -416
+      ],
+      "id": "29ecb576-fe55-43de-a394-ef66340d7920",
+      "name": "Consolidado"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "CONFIGURE_ID_40",
+              "name": "body.nome",
+              "value": "={{ $('MANYCHAT').item.json.body.name }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_42",
+              "name": "body.sobrenome",
+              "value": "={{\n($('MANYCHAT').item.json.body.name || '').split(' ')[1] || ''\n}}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_43",
+              "name": "body.email",
+              "value": "={{$('MANYCHAT').item.json.body.email }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_44",
+              "name": "body.telefone",
+              "value": "={{ ($json.body.whatsapp_phone).replace(/\\D/g,'')\n}}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_45",
+              "name": "body.celular",
+              "value": "={{ ($json.body.whatsapp_phone).replace(/\\D/g,'')\n}}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_46",
+              "name": "body.Cargo",
+              "value": "={{ $json.body.custom_fields.Comercial_Cargo_do_contato ?? \"Outros\"}}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_47",
+              "name": "body.nome_empresa",
+              "value": "={{ $json.body.custom_fields.Comercial_Nome_da_Empresa ?? null }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_48",
+              "name": "body.identificacao_evento",
+              "value": "={{ $json.body.custom_fields.Comercial_fonte_original_do_lead___marketing ?? null }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_49",
+              "name": "body.interesse",
+              "value": "=Geral",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_50",
+              "name": "body.id_rd",
+              "value": "={{ $json.body.key }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_51",
+              "name": "body.event_type",
+              "value": "={{ $json.body.custom_fields.Comercial_fonte_original_do_lead___marketing ?? null }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_52",
+              "name": "body.event_identifier",
+              "value": "={{ $json.body.custom_fields.Comercial_fonte_original_do_lead___marketing ?? null }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_53",
+              "name": "body.identificador",
+              "value": "={{ $json.body.live_chat_url  ?? null }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_54",
+              "name": "body.device",
+              "value": "={{ $json.headers[\"user-agent\"] ?? null }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_55",
+              "name": "body.Canal",
+              "value": "=Whatsapp Track",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_56",
+              "name": "body.canal_id_lead",
+              "value": "=415",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_57",
+              "name": "body.Origem_lead",
+              "value": "=Fusão empresa_demo x Track",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_58",
+              "name": "body.Origem_Lead_id",
+              "value": "=325",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_59",
+              "name": "body.origin_channel",
+              "value": "=Site",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_60",
+              "name": "body.origin_medium",
+              "value": "=Site",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_61",
+              "name": "body.origin_source",
+              "value": "=Site",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_62",
+              "name": "body.leads_uuid",
+              "value": "={{ $json.body.key }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_63",
+              "name": "body.canal_id_lead_canal_n_usar",
+              "value": "=364",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_78",
+              "name": "body.user-agent",
+              "value": "={{ $json.headers[\"user-agent\"]??\"ManyChat\" }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_79",
+              "name": "body.Mensagem",
+              "value": "={{ $json.body.custom_fields.Comercial_Mensagem }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_80",
+              "name": "body.tags",
+              "value": "Sem tag informada",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_81",
+              "name": "body.uuid",
+              "value": "={{ $json.body.id }}",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_82",
+              "name": "body.label",
+              "value": "\"CONFIGURE_ID_70\"",
+              "type": "string"
+            },
+            {
+              "id": "CONFIGURE_ID_83",
+              "name": "",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1088,
+        -592
+      ],
+      "id": "9d7f98ce-9f22-4906-9116-7baa91febd1c",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.rd.services/auth/token",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"client_id\": \"CONFIGURE_SECRET_PRIVATELY\",\n  \"client_secret\": \"CONFIGURE_SECRET_PRIVATELY\",\n  \"refresh_token\": \"CONFIGURE_SECRET_PRIVATELY\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        864,
+        -560
+      ],
+      "id": "d6b4ba68-4331-44cb-b96e-afbf77e2dea5",
+      "name": "Token RD",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.rd.services/platform/contacts/uuid:{{ $('Consolidado').first().json.body.uuid }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"cf_hub_id_do_registro\": \"{{ $('Criar Lead4').item.json.data.id }}\",\n  \"cf_canal\": \"{{ $('Consolidado').first().json.body.Canal }}\",\n  \"cf_origem_do_lead\":\"{{ $('Consolidado').first().json.body.Origem_lead }}\",\n  \"bio\":\"Lead: {{ $('Criar Lead4').first().json.data.title }} criado com sucesso no CRM Pipedrive, confira: https://crm.example.com/CONFIGURE_ENDPOINT $('Consolidado').first().json.body.uuid }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1088,
+        -560
+      ],
+      "id": "6f301bb4-64a6-4d9c-979f-841e7bb2f070",
+      "name": "Atualizar RD",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.rd.services/auth/token",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"client_id\": \"CONFIGURE_SECRET_PRIVATELY\",\n  \"client_secret\": \"CONFIGURE_SECRET_PRIVATELY\",\n  \"refresh_token\": \"CONFIGURE_SECRET_PRIVATELY\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1088,
+        -784
+      ],
+      "id": "4f8289d8-e228-4729-9af4-6ff8a5a5c02b",
+      "name": "Token_RD",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.rd.services/platform/contacts/uuid:{{ $('Consolidado').first().json.body.uuid }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"cf_hub_id_do_registro\": \"{{ $('Criar Lead2').first().json.data.id }}\",\n  \"cf_canal\": \"{{ $('Consolidado').first().json.body.Canal }}\",\n  \"cf_origem_do_lead\":\"{{ $('Consolidado').first().json.body.Origem_lead }}\",\n  \"bio\":\"Lead: {{ $('Criar Lead2').first().json.data.title }} criado com sucesso no CRM Pipedrive, confira: https://crm.example.com/CONFIGURE_ENDPOINT $('Consolidado').first().json.body.uuid }}\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1312,
+        -784
+      ],
+      "id": "6d4549fa-9949-48a2-8d2d-63bb500c7b56",
+      "name": "Atualizar_RD",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "note",
+        "content": "=<b><i>OUTRAS INFORMAÇÕES</i></b><br><br>\n\n<b><i>Observação:</i></b><br>\n{{ $('Consolidado').first().json.body.Mensagem }}<br><br>\n\n<b><i>Nome e Sobrenome:</i></b><br>\n{{ $('Consolidado').first().json.body['nome e sobrenome'] }}<br><br>\n\n<b><i>Origem do contato:</i></b><br>\n{{ $('Consolidado').first().json.body.Canal }} - {{ $('Consolidado').first().json.body.Origem_lead }}<br><br>\n\n<b><i>Nome da empresa e ID criado:</i></b><br> {{ $('Consolidado').first().json.body.nome_empresa }}\n<br><br>\n\n<b><i>Identificador:</i></b><br> {{ $('Consolidado').item.json.body['user-agent'] }} - {{ $('Consolidado').item.json.body.event_identifier }}\n<br><br>",
+        "additionalFields": {
+          "lead_id": "={{ $('Criar Lead4').first().json.data.id }}"
+        }
+      },
+      "type": "n8n-nodes-base.pipedrive",
+      "typeVersion": 1,
+      "position": [
+        1328,
+        -560
+      ],
+      "id": "20d387a8-0a8b-4ead-b5b6-6a07c5ac726b",
+      "name": "Add Note Lead1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "note",
+        "content": "=<b><i>OUTRAS INFORMAÇÕES</i></b><br><br>\n\n<b><i>Observação:</i></b><br>\n{{ $('Consolidado').first().json.body.Mensagem }}<br><br>\n\n<b><i>Nome e Sobrenome:</i></b><br>\n{{ $('Consolidado').first().json.body['nome e sobrenome'] }}<br><br>\n\n<b><i>Origem do contato:</i></b><br>\n{{ $('Consolidado').first().json.body.Canal }} - {{ $('Consolidado').first().json.body.Origem_lead }}<br><br>\n\n<b><i>Nome da empresa e ID criado:</i></b><br> {{ $('Consolidado').first().json.body.nome_empresa }}\n<br><br>\n\n<b><i>Identificador:</i></b><br> {{ $('Consolidado').item.json.body['user-agent'] }} - {{ $('Consolidado').item.json.body.event_identifier }}\n<br><br>\n\n",
+        "additionalFields": {
+          "lead_id": "={{ $('Criar Lead2').first().json.data.id }}",
+          "person_id": "={{ $('Criar pessoa').first().json.id }}"
+        }
+      },
+      "type": "n8n-nodes-base.pipedrive",
+      "typeVersion": 1,
+      "position": [
+        1552,
+        -784
+      ],
+      "id": "3ecb9cd1-b759-4aaf-8240-ca556161bf00",
+      "name": "Add Note Lead",
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1552,
+        -560
+      ],
+      "id": "d9d583c8-b248-4072-90e9-705904542315",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "content": "## Lead Guardian e enriquecimento — RD Station → Pipedrive\nTemplate público inativo. Bloco 29. Consulte docs/arquitetura.md.",
+        "height": 732,
+        "width": 540,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1904,
+        -880
+      ],
+      "id": "3b3a44e1-104b-44eb-8ec2-02db61fbf2ac",
+      "name": "Sticky Note",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.rd.services/auth/token",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"client_id\": \"CONFIGURE_SECRET_PRIVATELY\",\n  \"client_secret\": \"CONFIGURE_SECRET_PRIVATELY\",\n  \"refresh_token\": \"CONFIGURE_SECRET_PRIVATELY\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -576,
+        -736
+      ],
+      "id": "cb7c2ac0-ea9c-434f-b195-076455039bb1",
+      "name": "Obter Token RD",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## Lead Guardian e enriquecimento — RD Station → Pipedrive\nTemplate público inativo. Bloco 31. Consulte docs/arquitetura.md.",
+        "height": 796,
+        "width": 476,
+        "color": "#892A01"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        -880
+      ],
+      "id": "d70a2188-0a33-41a6-a78e-d95c6a82064f",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.rd.services/platform/contacts/{{ $('Consolidado').first().json.body.uuid }}/events?event_type=CONVERSION",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Obter Token RD').first().json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -576,
+        -512
+      ],
+      "id": "7057af1d-4e37-47d2-88a2-1d7d02f37237",
+      "name": "Obter Eventos do Lead",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "=https://api.rd.services/platform/contacts/email:{{ $('Consolidado').first().json.body.email }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Obter Token RD').first().json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -352,
+        -736
+      ],
+      "id": "2c8aac14-4ab8-45b0-a59d-054c90d95ba9",
+      "name": "Obter Dados Lead",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// ===============================\n// Lead Guardian v1\n// Objetivo:\n// Detectar apenas comportamento de spam.\n// ===============================\n\n// Dados do Lead\nconst lead = $('Obter Dados Lead').first().json;\n\n// Eventos de Conversão\nconst eventos = $('Obter Eventos do Lead').all().map(i => i.json);\n\n// BIO (informativa)\nconst bio = (lead.bio || \"\").trim();\nconst jaSincronizado = /pipedrive/i.test(bio);\n\n// ===============================\n// Ordena eventos\n// ===============================\nconst ordenados = eventos\n    .map(e => new Date(e.event_timestamp))\n    .filter(d => !isNaN(d.getTime()))\n    .sort((a, b) => a - b);\n\n// ===============================\n// Estatísticas\n// ===============================\nconst totalEventos = ordenados.length;\n\nlet tempoTotalSegundos = 0;\n\nif (totalEventos > 1) {\n    tempoTotalSegundos = Math.round(\n        (ordenados[totalEventos - 1] - ordenados[0]) / 1000\n    );\n}\n\n// ===============================\n// Regras\n// ===============================\nlet spam = false;\nlet status = \"VALIDO\";\nlet acao = \"CRIAR\";\n\nconst motivos = [];\n\n// Flood\nif (\n    totalEventos >= 2 &&\n    tempoTotalSegundos <= 60\n) {\n\n    spam = true;\n    status = \"SPAM\";\n    acao = \"IGNORAR\";\n\n    motivos.push(\n        `Foram identificadas ${totalEventos} conversões em apenas ${tempoTotalSegundos} segundos, caracterizando comportamento compatível com flood ou automação.`\n    );\n\n}\n\n// Lead válido\nif (!spam) {\n\n    motivos.push(\n        \"Nenhum comportamento suspeito foi identificado.\"\n    );\n\n}\n\n// ===============================\n// Observação\n// ===============================\nconst observacao = spam\n\n? `[Lead Guardian]\n\nLead bloqueado automaticamente.\n\nMotivo:\n• ${motivos.join(\"\\n• \")}\n\nAção:\n• Nenhuma sincronização com o CRM Pipedrive foi realizada.`\n\n: `[Lead Guardian]\n\nLead validado automaticamente.\n\nNenhum comportamento suspeito foi identificado.\n\nO lead está apto para seguir o fluxo normal de sincronização.`;\n\n// ===============================\n// Retorno\n// ===============================\nreturn [{\n    json: {\n\n        status,\n\n        acao,\n\n        spam,\n\n        enviar_pipedrive: !spam,\n\n        uuid: lead.uuid,\n\n        email: lead.email,\n\n        nome: lead.name,\n\n        bio_encontrada: bio !== \"\",\n\n        ja_sincronizado: jaSincronizado,\n\n        total_eventos: totalEventos,\n\n        tempo_total_segundos: tempoTotalSegundos,\n\n        primeiro_evento: ordenados.length\n            ? ordenados[0].toISOString()\n            : null,\n\n        ultimo_evento: ordenados.length\n            ? ordenados[ordenados.length - 1].toISOString()\n            : null,\n\n        motivos,\n\n        observacao\n\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -576,
+        -320
+      ],
+      "id": "6a123484-78db-4a69-9c30-b6670b6cc69e",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "CONFIGURE_ID_98",
+              "leftValue": "={{ $json.spam }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -352,
+        -336
+      ],
+      "id": "63f97b87-f383-4ad8-a762-857f7af43aeb",
+      "name": "É Spam?"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.rd.services/platform/contacts/uuid:{{ $('Consolidado').first().json.body.uuid }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "authorization",
+              "value": "=Bearer {{ $('Obter Token RD').first().json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n\"bio\":\"Lead identificado como Spam: {{ $('É Spam?').first().json.motivos[0] }}. Cadastro criado no Pipedrive anteriormente.\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -352,
+        -512
+      ],
+      "id": "73e65147-44fa-4e52-bada-3ce05ceb0c3f",
+      "name": "Atualizar_RD Spam",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## Lead Guardian e enriquecimento — RD Station → Pipedrive\nTemplate público inativo. Bloco 37. Consulte docs/arquitetura.md.",
+        "height": 492,
+        "width": 1900,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        -880
+      ],
+      "id": "313cf6ca-0880-4f8e-a281-a9a7afd99cbd",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "resource": "person",
+        "name": "={{ $('Consolidado').first().json.body.nome }}",
+        "additionalFields": {
+          "customProperties": {
+            "property": [
+              {
+                "name": "CONFIGURE_ID_27",
+                "value": "={{ $('Consolidado').first().json.body.Cargo ?? \"Outros\"}}"
+              },
+              {
+                "name": "CONFIGURE_ID_28",
+                "value": "={{ $('Consolidado').first().json.body.id_rd }}"
+              },
+              {
+                "name": "CONFIGURE_ID_29",
+                "value": "={{ $('Consolidado').first().json.body.Cargo ?? \"Outros\"}}"
+              },
+              {
+                "name": "CONFIGURE_ID_29",
+                "value": "={{ $('Consolidado').first().json.body.Cargo ?? \"Outros\"}}"
+              }
+            ]
+          },
+          "email": [
+            "={{ $('Consolidado').first().json.body.email }}"
+          ],
+          "label": 7,
+          "marketing_status": "subscribed",
+          "phone": [
+            "={{\n[\n  $('Consolidado').first().json.body.celular,\n  $('Consolidado').first().json.body.telefone\n]\n.find(v => v && String(v).replace(/\\D/g,'').trim() !== '')\n}}"
+          ],
+          "visible_to": "3",
+          "owner_id": "={{ CONFIGURE_ID_22 }}"
+        }
+      },
+      "type": "n8n-nodes-base.pipedrive",
+      "typeVersion": 1,
+      "position": [
+        176,
+        -560
+      ],
+      "id": "90766473-b1ca-4899-8e63-8b6db80b17a8",
+      "name": "Criar pessoa1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## Lead Guardian e enriquecimento — RD Station → Pipedrive\nTemplate público inativo. Bloco 39. Consulte docs/arquitetura.md.",
+        "height": 288,
+        "width": 1920,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        -368
+      ],
+      "id": "6f1b4db3-c8b4-477b-88ed-2dc785662c0f",
+      "name": "Sticky Note4"
+    }
+  ],
+  "connections": {
+    "RD Station": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MANYCHAT": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar evento": {
+      "main": [
+        [],
+        [],
+        []
+      ]
+    },
+    "Obter usuários": {
+      "main": [
+        [
+          {
+            "node": "Listar Leads API e Cruzar Usuários",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lista todos os leads": {
+      "main": [
+        [
+          {
+            "node": "Obter usuários",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Listar Leads API e Cruzar Usuários": {
+      "main": [
+        [
+          {
+            "node": "Definir Owner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Definir Owner",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VALIDAR TIPO DE E-MAIL2": {
+      "main": [
+        [
+          {
+            "node": "Criar organização",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Criar pessoa1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Definir Owner": {
+      "main": [
+        []
+      ]
+    },
+    "TIPO DE E-MAIL": {
+      "main": [
+        [
+          {
+            "node": "Obter Token RD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar organização": {
+      "main": [
+        [
+          {
+            "node": "Criar pessoa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar pessoa": {
+      "main": [
+        [
+          {
+            "node": "Criar Lead2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Lead2": {
+      "main": [
+        [
+          {
+            "node": "Update Lead2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Lead2": {
+      "main": [
+        [
+          {
+            "node": "Token_RD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Lead4": {
+      "main": [
+        [
+          {
+            "node": "Update Lead3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Consolidado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consolidado": {
+      "main": [
+        [
+          {
+            "node": "TIPO DE E-MAIL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Consolidado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Lead3": {
+      "main": [
+        [
+          {
+            "node": "Token RD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Token RD": {
+      "main": [
+        [
+          {
+            "node": "Atualizar RD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Token_RD": {
+      "main": [
+        [
+          {
+            "node": "Atualizar_RD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar_RD": {
+      "main": [
+        [
+          {
+            "node": "Add Note Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar RD": {
+      "main": [
+        [
+          {
+            "node": "Add Note Lead1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Note Lead": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Note Lead1": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obter Token RD": {
+      "main": [
+        [
+          {
+            "node": "Obter Dados Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obter Eventos do Lead": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obter Dados Lead": {
+      "main": [
+        [
+          {
+            "node": "Obter Eventos do Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "É Spam?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "É Spam?": {
+      "main": [
+        [
+          {
+            "node": "Atualizar_RD Spam",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "VALIDAR TIPO DE E-MAIL2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar pessoa1": {
+      "main": [
+        [
+          {
+            "node": "Criar Lead4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

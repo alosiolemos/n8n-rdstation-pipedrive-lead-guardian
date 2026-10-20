@@ -1,0 +1,4 @@
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),vm=require('node:vm');
+const root=path.resolve(__dirname,'..');let count=0;
+for(const f of fs.readdirSync(path.join(root,'workflows'))){const w=JSON.parse(fs.readFileSync(path.join(root,'workflows',f)));assert.equal(w.active,false);assert.deepEqual(w.pinData,{});assert(!w.settings.errorWorkflow);const names=new Set(w.nodes.map(n=>n.name));for(const n of w.nodes){assert(!n.credentials);if(n.type.endsWith('.code'))new vm.Script('(function(){'+n.parameters.jsCode+'})()');}for(const [source,ports]of Object.entries(w.connections)){assert(names.has(source));for(const branches of Object.values(ports))for(const branch of branches)for(const edge of branch)assert(names.has(edge.node));}count++;}
+console.log(count+' templates validados localmente; nenhuma chamada externa foi executada.');

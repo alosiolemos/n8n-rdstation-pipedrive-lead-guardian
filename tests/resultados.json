@@ -1,0 +1,61 @@
+{
+  "scope": "Validação local sem n8n, APIs, LLM ou envio de mensagens",
+  "tests": [
+    {
+      "name": "entrada: inativo e sem dados fixados",
+      "result": "pass"
+    },
+    {
+      "name": "entrada: credenciais ausentes e integrações desativadas",
+      "result": "pass"
+    },
+    {
+      "name": "entrada: destinos das conexões existem",
+      "result": "pass"
+    },
+    {
+      "name": "entrada: JavaScript compila",
+      "result": "pass"
+    },
+    {
+      "name": "enriquecimento: inativo e sem dados fixados",
+      "result": "pass"
+    },
+    {
+      "name": "enriquecimento: credenciais ausentes e integrações desativadas",
+      "result": "pass"
+    },
+    {
+      "name": "enriquecimento: destinos das conexões existem",
+      "result": "pass"
+    },
+    {
+      "name": "enriquecimento: JavaScript compila",
+      "result": "pass"
+    },
+    {
+      "name": "Guardian: evento único permitido",
+      "result": "pass"
+    },
+    {
+      "name": "Guardian: limite de 60 segundos sinalizado",
+      "result": "pass"
+    },
+    {
+      "name": "Guardian: 61 segundos permitido",
+      "result": "pass"
+    },
+    {
+      "name": "Guardian: datas inválidas descartadas",
+      "result": "pass"
+    },
+    {
+      "name": "Guardian: intervalo considera extremos, não qualquer par",
+      "result": "pass"
+    },
+    {
+      "name": "Sem padrões de tokens conhecidos",
+      "result": "pass"
+    }
+  ]
+}
